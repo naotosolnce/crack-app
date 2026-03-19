@@ -2,7 +2,7 @@
   "name": "CRACK! — Pick the lighter side",
   "short_name": "CRACK!",
   "description": "Pick the lighter side or the glass breaks! A party game to spark conversations.",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0a0f",
