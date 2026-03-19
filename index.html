@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="description" content="Which side is heavier? A party game to spark conversations.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>">
+<title>CRACK!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#151520;--bg3:#1e1e2e;
+  --tx:#f0eef6;--tx2:#a8a4b8;--tx3:#6b6880;
+  --acc:#f5c542;--acc2:#ffd96a;--acc-dim:#3d3520;
+  --blue:#4a9eff;--red:#ff6b6b;--green:#5cdb95;
+  --radius:16px;--radius-sm:10px;
+  --font:'Nunito','Noto Sans JP',sans-serif;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+html,body{
+  height:100%;background:var(--bg);color:var(--tx);
+  font-family:var(--font);overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+body{display:flex;flex-direction:column}
+
+#app{
+  flex:1;display:flex;flex-direction:column;
+  max-width:480px;width:100%;margin:0 auto;
+  padding:calc(var(--safe-top) + 8px) 16px calc(var(--safe-bottom) + 16px);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+
+.screen{display:none;flex-direction:column;flex:1}
+.screen.active{display:flex}
+
+/* ===== SPLASH ===== */
+.splash{align-items:center;justify-content:center;text-align:center;gap:24px}
+.splash-icon{font-size:72px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.splash h1{font-size:32px;font-weight:900;letter-spacing:-1px;line-height:1.1}
+.splash h1 .accent{color:var(--acc)}
+.splash p{font-size:15px;color:var(--tx2);line-height:1.6;max-width:280px}
+.lang-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+.lang-btn{
+  padding:8px 18px;border-radius:var(--radius-sm);border:1.5px solid var(--bg3);
+  background:var(--bg2);color:var(--tx2);font-size:14px;font-family:var(--font);
+  cursor:pointer;transition:all .15s;
+}
+.lang-btn:hover,.lang-btn.active{border-color:var(--acc);color:var(--acc);background:var(--acc-dim)}
+.start-btn{
+  margin-top:16px;padding:16px 56px;border-radius:var(--radius);border:none;
+  background:var(--acc);color:#0a0a0f;font-size:18px;font-weight:800;
+  font-family:var(--font);cursor:pointer;letter-spacing:0.5px;
+  transition:transform .1s;
+}
+.start-btn:active{transform:scale(0.96)}
+
+/* ===== GAME ===== */
+.game-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0 12px;
+}
+.stat{font-size:13px;color:var(--tx2)}
+.stat strong{color:var(--tx);font-weight:800}
+.streak-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 10px;border-radius:20px;
+  background:var(--acc-dim);color:var(--acc);font-size:12px;font-weight:600;
+}
+.diff-pill{
+  align-self:center;padding:4px 14px;border-radius:20px;
+  font-size:12px;font-weight:600;margin-bottom:6px;
+}
+.diff-hard{background:#3d1a1a;color:#ff8a8a}
+.diff-med{background:#3d3520;color:#ffd96a}
+.diff-easy{background:#1a3d2a;color:#5cdb95}
+.q-title{text-align:center;font-size:20px;font-weight:800;margin-bottom:16px}
+
+.battle-card{
+  background:var(--bg2);border-radius:var(--radius);
+  padding:6px;display:flex;flex-direction:column;gap:6px;
+}
+.side{
+  display:flex;align-items:center;gap:12px;
+  padding:16px;border-radius:var(--radius-sm);
+  border:2px solid transparent;cursor:pointer;
+  transition:all .15s;position:relative;overflow:hidden;
+}
+.side::before{
+  content:'';position:absolute;inset:0;opacity:0;
+  transition:opacity .15s;border-radius:inherit;
+}
+.side:active{transform:scale(0.98)}
+.side-a::before{background:linear-gradient(135deg,rgba(74,158,255,.12),transparent)}
+.side-b::before{background:linear-gradient(135deg,rgba(255,107,107,.12),transparent)}
+.side:hover::before{opacity:1}
+.side.chosen-a{border-color:var(--blue);background:rgba(74,158,255,.08)}
+.side.chosen-b{border-color:var(--red);background:rgba(255,107,107,.08)}
+.side.winner{border-color:var(--green);background:rgba(92,219,149,.08)}
+.side .emoji{font-size:42px;line-height:1;flex-shrink:0;z-index:1}
+.side .meta{flex:1;z-index:1}
+.side .animal-name{font-size:16px;font-weight:700;line-height:1.2}
+.side .animal-sub{font-size:12px;color:var(--tx3);margin-top:2px}
+.num-badge{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-width:48px;height:48px;border-radius:var(--radius-sm);
+  background:var(--bg3);z-index:1;
+}
+.num-badge .num{font-size:22px;font-weight:900;line-height:1}
+.num-badge .unit{font-size:10px;color:var(--tx3);margin-top:1px}
+.vs-divider{
+  text-align:center;font-size:14px;font-weight:800;
+  color:var(--tx3);letter-spacing:6px;padding:2px 0;
+}
+
+/* ===== RESULT ===== */
+.result-verdict{
+  text-align:center;font-size:24px;font-weight:900;margin:16px 0 12px;
+}
+.result-verdict.correct{color:var(--green)}
+.result-verdict.wrong{color:var(--red)}
+.bars{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:11px;color:var(--tx2);min-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:28px;border-radius:6px;overflow:hidden;background:var(--bg3)}
+.bar-fill{
+  height:100%;border-radius:6px;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:700;color:#fff;
+  min-width:40px;transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+.bar-fill.ba{background:linear-gradient(90deg,#4a9eff,#6bb3ff)}
+.bar-fill.bb{background:linear-gradient(90deg,#ff6b6b,#ff9494)}
+.winner-text{text-align:center;font-size:15px;font-weight:700;margin-bottom:4px}
+.gap-text{text-align:center;font-size:13px;color:var(--tx2);margin-bottom:12px}
+.size-compare{
+  display:flex;align-items:flex-end;justify-content:center;gap:24px;
+  padding:16px 12px 8px;margin-bottom:12px;
+  background:var(--bg2);border-radius:var(--radius-sm);
+  position:relative;overflow:hidden;
+}
+.size-compare::before{
+  content:'';position:absolute;bottom:8px;left:12px;right:12px;
+  height:1px;background:var(--tx3);opacity:0.3;
+}
+.size-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.size-emoji{transition:font-size .4s}
+.size-label{font-size:10px;color:var(--tx3);text-align:center;line-height:1.3}
+.size-label strong{color:var(--tx2);font-weight:700}
+.trap-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:6px 14px;border-radius:20px;
+  font-size:13px;font-weight:700;
+  background:rgba(245,197,66,0.12);color:var(--acc);
+  margin:8px auto 12px;text-align:center;
+}
+.human-ref{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  opacity:0.4;
+}
+.human-ref .size-label{font-size:9px}
+.fact-card{
+  background:var(--bg2);border-radius:var(--radius-sm);
+  padding:14px 16px;margin-bottom:8px;
+}
+.fact-card p{font-size:13px;color:var(--tx2);line-height:1.7;margin-bottom:6px}
+.fact-card p:last-child{margin-bottom:0}
+.fact-card .emoji-sm{font-size:14px;margin-right:4px}
+.source-text{font-size:10px;color:var(--tx3);line-height:1.6;padding:0 4px;margin-bottom:16px}
+.next-btn{
+  align-self:center;padding:14px 56px;border-radius:var(--radius);border:none;
+  background:var(--bg3);color:var(--tx);font-size:16px;font-weight:700;
+  font-family:var(--font);cursor:pointer;transition:all .15s;
+  margin-bottom:16px;
+}
+.next-btn:active{transform:scale(0.96);background:var(--acc-dim)}
+
+/* Glass break effect */
+.glass-overlay{
+  position:fixed;inset:0;z-index:999;pointer-events:none;
+  overflow:hidden;
+}
+.glass-shard{
+  position:absolute;
+  background:rgba(200,220,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  animation:shardFall 0.8s cubic-bezier(.25,.46,.45,.94) forwards;
+}
+@keyframes shardFall{
+  0%{transform:translate(0,0) rotate(0deg);opacity:1}
+  100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}
+}
+.crack-line{
+  position:absolute;
+  background:rgba(255,255,255,0.4);
+  transform-origin:center;
+  animation:crackFlash 0.5s ease-out forwards;
+}
+@keyframes crackFlash{
+  0%{opacity:1;transform:scaleX(0)}
+  30%{opacity:1;transform:scaleX(1)}
+  100%{opacity:0;transform:scaleX(1)}
+}
+.impact-ring{
+  position:absolute;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.3);
+  animation:ringExpand 0.6s ease-out forwards;
+}
+@keyframes ringExpand{
+  0%{transform:scale(0);opacity:1}
+  100%{transform:scale(3);opacity:0}
+}
+.heavy-emoji-fall{
+  position:absolute;z-index:1000;
+  animation:emojiSlam 0.5s cubic-bezier(.6,.04,.98,.34) forwards;
+}
+@keyframes emojiSlam{
+  0%{transform:translateY(-120px) scale(1.5);opacity:0.8}
+  70%{transform:translateY(0) scale(1.8);opacity:1}
+  85%{transform:translateY(-10px) scale(1.6)}
+  100%{transform:translateY(0) scale(1.5);opacity:1}
+}
+.screen-shake{
+  animation:shake 0.3s ease-in-out;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px) translateY(2px)}
+  40%{transform:translateX(5px) translateY(-2px)}
+  60%{transform:translateX(-4px) translateY(1px)}
+  80%{transform:translateX(3px)}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- SPLASH -->
+  <div class="screen splash active" id="screen-splash">
+    <div class="splash-icon">🪟</div>
+    <h1><span class="accent" id="title1">CRACK!</span></h1>
+    <p id="splash-desc">Which side is heavier? Pick a side and spark a conversation!</p>
+    <div class="lang-grid" id="lang-grid"></div>
+    <button class="start-btn" id="start-btn" onclick="startGame()">START</button>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="screen-game">
+    <div class="game-header">
+      <span class="stat" id="stat-score"></span>
+      <span id="streak-area"></span>
+      <span class="stat" id="stat-round"></span>
+    </div>
+    <div id="diff-area" style="text-align:center"></div>
+    <div class="q-title" id="q-title"></div>
+    <div class="battle-card" id="battle-card"></div>
+    <div id="result-area" style="margin-top:16px"></div>
+  </div>
+
+</div>
+
+<script>
+// ===== LANGUAGE DATA =====
+const LANGS = {
+  ja: {
+    flag:"🇯🇵", label:"日本語",
+    title1:"CRACK!", title2:"",
+    desc:"かるい方をえらべ！ まちがえたら…💥",
+    start:"スタート", question:"どっちが軽い？", vs:"VS",
+    correct:"セーフ！ 🎉", wrong:"ドシャーン！💥",
+    win:"が重くて崩壊！", gap:"差は", next:"つぎへ", retry:"リトライ",
+    score:"正解", round:"問目", streak:"連続",
+    unit:"頭", hard:"激ムズ", med:"僅差", easy:"いける？",
+    src:"出典",
+    trapTrivia:"{name}は{h}cmもあるのに{w}しかない！", notrap:"見た目通り！", heightLabel:"体高",
+    human:"人間", sizeTitle:"大きさ比較",
+  },
+  en: {
+    flag:"🇬🇧", label:"English",
+    title1:"CRACK!", title2:"",
+    desc:"Pick the lighter side. Choose wrong and... 💥",
+    start:"START", question:"Which is lighter?", vs:"VS",
+    correct:"Safe! 🎉", wrong:"CRASH! 💥",
+    win:"was heavier — CRASH!", gap:"Difference:", next:"Next", retry:"Retry",
+    score:"correct", round:"round", streak:"streak",
+    unit:"", hard:"Tough one", med:"Close call", easy:"Can you tell?",
+    src:"Source",
+    trapTrivia:"{name} is {h}cm tall but only {w}!", notrap:"Size checks out!", heightLabel:"Height",
+    human:"Human", sizeTitle:"Size comparison",
+  },
+  es: {
+    flag:"🇪🇸", label:"Español",
+    title1:"CRACK!", title2:"",
+    desc:"Elige el más ligero. Si no... 💥",
+    start:"EMPEZAR", question:"¿Cuál es más liviano?", vs:"VS",
+    correct:"¡A salvo! 🎉", wrong:"¡CRASH! 💥",
+    win:"¡gana!", gap:"Diferencia:", next:"Siguiente", retry:"Reintentar",
+    score:"aciertos", round:"ronda", streak:"racha",
+    unit:"", hard:"Difícil", med:"Reñido", easy:"¿Obvio?",
+    src:"Fuente",
+    trapTrivia:"{name} mide {h}cm pero solo pesa {w}!", notrap:"¡Tamaño correcto!", heightLabel:"Altura", human:"Humano", sizeTitle:"Comparación",
+  },
+  zh: {
+    flag:"🇨🇳", label:"中文",
+    title1:"CRACK!", title2:"",
+    desc:"选轻的一边，选错就…💥",
+    start:"开始", question:"哪边更轻？", vs:"VS",
+    correct:"安全！🎉", wrong:"碎了！💥",
+    win:"赢了！", gap:"差距：", next:"下一题", retry:"再试一次",
+    score:"正确", round:"题", streak:"连对",
+    unit:"只", hard:"超难", med:"势均力敌", easy:"能猜到？",
+    src:"来源",
+    trapTrivia:"{name}身高{h}cm，却只有{w}！", notrap:"体型没骗人！", heightLabel:"身高", human:"人类", sizeTitle:"大小对比",
+  },
+  ko: {
+    flag:"🇰🇷", label:"한국어",
+    title1:"CRACK!", title2:"",
+    desc:"가벼운 쪽을 골라! 틀리면… 💥",
+    start:"시작", question:"어느 쪽이 가벼울까?", vs:"VS",
+    correct:"세이프! 🎉", wrong:"와장창! 💥",
+    win:"승리!", gap:"차이:", next:"다음", retry:"다시",
+    score:"정답", round:"문제", streak:"연속",
+    unit:"마리", hard:"어렵다", med:"접전", easy:"알겠지?",
+    src:"출처",
+    trapTrivia:"{name}은(는) {h}cm인데 {w}밖에 안 된다!", notrap:"크기대로!", heightLabel:"키", human:"인간", sizeTitle:"크기 비교",
+  },
+  fr: {
+    flag:"🇫🇷", label:"Français",
+    title1:"CRACK!", title2:"",
+    desc:"Choisis le plus léger. Sinon… 💥",
+    start:"JOUER", question:"Lequel est plus léger ?", vs:"VS",
+    correct:"Sauvé ! 🎉", wrong:"CRASH ! 💥",
+    win:"gagne !", gap:"Différence :", next:"Suivant", retry:"Réessayer",
+    score:"bonnes", round:"question", streak:"série",
+    unit:"", hard:"Difficile", med:"Serré", easy:"Évident ?",
+    src:"Source",
+    trapTrivia:"{name} mesure {h}cm mais ne pèse que {w} !", notrap:"Taille logique !", heightLabel:"Hauteur", human:"Humain", sizeTitle:"Comparaison",
+  },
+  pt: {
+    flag:"🇧🇷", label:"Português",
+    title1:"CRACK!", title2:"",
+    desc:"Escolha o mais leve. Errou… 💥",
+    start:"JOGAR", question:"Qual é mais leve?", vs:"VS",
+    correct:"Salvo! 🎉", wrong:"CRASH! 💥",
+    win:"vence!", gap:"Diferença:", next:"Próximo", retry:"Tentar de novo",
+    score:"acertos", round:"rodada", streak:"sequência",
+    unit:"", hard:"Difícil", med:"Apertado", easy:"Dá pra saber?",
+    src:"Fonte",
+    trapTrivia:"{name} tem {h}cm mas pesa só {w}!", notrap:"Tamanho confere!", heightLabel:"Altura", human:"Humano", sizeTitle:"Comparação",
+  },
+  de: {
+    flag:"🇩🇪", label:"Deutsch",
+    title1:"CRACK!", title2:"",
+    desc:"Wähl die leichtere Seite. Sonst… 💥",
+    start:"LOS", question:"Was ist leichter?", vs:"VS",
+    correct:"Sicher! 🎉", wrong:"KRACH! 💥",
+    win:"gewinnt!", gap:"Unterschied:", next:"Weiter", retry:"Nochmal",
+    score:"richtig", round:"Frage", streak:"Serie",
+    unit:"", hard:"Schwer", med:"Knapp", easy:"Offensichtlich?",
+    src:"Quelle",
+    trapTrivia:"{name} ist {h}cm groß, wiegt aber nur {w}!", notrap:"Größe stimmt!", heightLabel:"Höhe", human:"Mensch", sizeTitle:"Größenvergleich",
+  },
+};
+
+// ===== ANIMAL DB (all weights sourced from Wikipedia) =====
+const ANIMALS = {
+  ja:[
+    {n:"アフリカゾウ",i:"🐘",w:4800,h:330,f:"1日に230kgの植物を食べる陸上最大の動物",s:"Wikipedia: ~4,800kg"},
+    {n:"アジアゾウ",i:"🐘",w:3200,h:270,f:"アフリカゾウより耳が小さい",s:"Wikipedia: ~3,200kg"},
+    {n:"カバ",i:"🦛",w:1500,h:150,f:"アフリカで最も人を襲う動物の一つ",s:"Wikipedia: ~1,500kg"},
+    {n:"シロサイ",i:"🦏",w:2175,h:180,f:"「シロ」は口幅(wide)の聞き間違いが由来",s:"Wikipedia: 2,175kg"},
+    {n:"クロサイ",i:"🦏",w:1100,h:160,f:"唇が尖っていて枝葉をつまんで食べる",s:"Wikipedia: ~1,100kg"},
+    {n:"インドサイ",i:"🦏",w:1600,h:175,f:"鎧のような皮膚。角は1本だけ",s:"Wikipedia: ~1,600kg"},
+    {n:"キリン",i:"🦒",w:800,h:530,f:"心臓は約11kg。血圧は人間の2倍",s:"Wikipedia: ~800kg"},
+    {n:"ゴリラ",i:"🦍",w:140,h:170,f:"握力500kg。DNAの98%が人間と同じ",s:"Wikipedia: 136-227kg, avg ~140kg"},
+    {n:"ホッキョクグマ",i:"🐻‍❄️",w:450,h:150,f:"体脂肪率最大50%。クマ科最大",s:"Wikipedia: male ~450kg"},
+    {n:"ヒグマ",i:"🐻",w:390,h:130,f:"時速56km。ボルトより速い",s:"Wikipedia: male ~390kg"},
+    {n:"ライオン",i:"🦁",w:160,h:120,f:"1日20時間寝ることも",s:"Wikipedia: 150-250kg, avg ~160kg"},
+    {n:"トラ",i:"🐅",w:220,h:110,f:"ネコ科最大。縞は皮膚にもある",s:"Wikipedia: male ~220kg"},
+    {n:"ヒョウ",i:"🐆",w:60,h:70,f:"体重の3倍の獲物を木に運べる",s:"Wikipedia: male ~60kg"},
+    {n:"チーター",i:"🐆",w:50,h:80,f:"時速112km。3秒で100km/hに到達",s:"Wikipedia: ~50kg"},
+    {n:"ブチハイエナ",i:"🦴",w:55,h:80,f:"噛む力はライオン以上。骨も砕く",s:"Wikipedia: ~50-60kg"},
+    {n:"オオカミ",i:"🐺",w:40,h:80,f:"遠吠えは16km先まで届く",s:"Wikipedia: ~40kg"},
+    {n:"カンガルー",i:"🦘",w:66,h:150,f:"ジャンプ1回で9m進む",s:"Wikipedia: male ~66kg"},
+    {n:"パンダ",i:"🐼",w:100,h:80,f:"1日に最大38kgの竹を食べる",s:"Wikipedia: ~100kg"},
+    {n:"ラクダ",i:"🐫",w:500,h:210,f:"こぶの中身は脂肪（水ではない）",s:"Wikipedia: ~500kg"},
+    {n:"シマウマ",i:"🦓",w:350,h:130,f:"縞模様は1頭ずつ違う",s:"Wikipedia: ~350kg"},
+    {n:"バク",i:"🐽",w:300,h:110,f:"4000万年前から姿が変わらない",s:"Wikipedia: ~300kg"},
+    {n:"ヘラジカ",i:"🦌",w:500,h:200,f:"角幅は最大2m。毎年生え変わる",s:"Wikipedia: male ~500kg"},
+    {n:"セイウチ",i:"🦭",w:1000,h:120,f:"牙は最大1m。氷に穴を開ける",s:"Wikipedia: ~1,000kg"},
+    {n:"ジャガー",i:"🐆",w:90,h:70,f:"ネコ科で顎力最強。頭蓋骨も貫通",s:"Wikipedia: male ~90kg"},
+    {n:"ワニ(イリエ)",i:"🐊",w:450,h:45,f:"噛む力は動物界最強級。約2トン",s:"Wikipedia: male ~450kg"},
+    {n:"コビトカバ",i:"🦛",w:250,h:80,f:"カバの仲間だが体重は1/6",s:"Wikipedia: ~250kg"},
+    {n:"カピバラ",i:"🐹",w:55,h:55,f:"世界最大のネズミの仲間。温泉好き",s:"Wikipedia: ~55kg"},
+    {n:"ダチョウ",i:"🐦",w:110,h:270,f:"飛べない鳥。でも時速70km",s:"Wikipedia: ~110kg"},
+    {n:"コモドドラゴン",i:"🦎",w:70,h:40,f:"世界最大のトカゲ。毒の唾液で狩る",s:"Wikipedia: ~70kg"},
+    {n:"オランウータン",i:"🦧",w:75,h:140,f:"腕を広げると2m。「森の人」",s:"Wikipedia: male ~75kg"},
+    {n:"ウォンバット",i:"🐻",w:30,h:35,f:"うんちが四角い唯一の動物",s:"Wikipedia: ~30kg"},
+    {n:"コアラ",i:"🐨",w:10,h:35,f:"1日22時間寝る",s:"Wikipedia: ~10kg"},
+    {n:"ペンギン(皇帝)",i:"🐧",w:35,h:115,f:"−60℃に耐える。オスが卵を温める",s:"Wikipedia: ~35kg"},
+    {n:"ナマケモノ",i:"🦥",w:5,h:60,f:"消化に1ヶ月かかることも",s:"Wikipedia: ~5kg"},
+    {n:"ビーバー",i:"🦫",w:25,h:30,f:"歯は一生伸びる。ダム建設の天才",s:"Wikipedia: ~25kg"},
+    {n:"アライグマ",i:"🦝",w:8,h:30,f:"前足が超器用。瓶も開ける",s:"Wikipedia: ~8kg"},
+    {n:"バイソン",i:"🦬",w:850,h:186,f:"北米最大の陸上動物",s:"Wikipedia: male ~850kg"},
+    {n:"スイギュウ",i:"🐃",w:725,h:170,f:"角が大きく広がる水辺の大物",s:"Wikipedia: ~725kg"},
+    {n:"マレーグマ",i:"🐻",w:50,h:70,f:"クマ科最小。舌が25cm",s:"Wikipedia: ~50kg"},
+    {n:"アルパカ",i:"🦙",w:65,h:90,f:"怒ると唾を吐く",s:"Wikipedia: ~65kg"},
+  ],
+  en:[
+    {n:"African Elephant",i:"🐘",w:4800,h:330,f:"Eats 230kg of plants daily — the largest land animal",s:"Wikipedia: ~4,800kg"},
+    {n:"Asian Elephant",i:"🐘",w:3200,h:270,f:"Smaller ears than its African cousin",s:"Wikipedia: ~3,200kg"},
+    {n:"Hippopotamus",i:"🦛",w:1500,h:150,f:"One of Africa's most dangerous animals to humans",s:"Wikipedia: ~1,500kg"},
+    {n:"White Rhino",i:"🦏",w:2175,h:180,f:"'White' comes from 'wide' — referring to its mouth",s:"Wikipedia: 2,175kg"},
+    {n:"Black Rhino",i:"🦏",w:1100,h:160,f:"Has a hooked upper lip for grabbing branches",s:"Wikipedia: ~1,100kg"},
+    {n:"Indian Rhino",i:"🦏",w:1600,h:175,f:"Armor-like skin plates. Only one horn",s:"Wikipedia: ~1,600kg"},
+    {n:"Giraffe",i:"🦒",w:800,h:530,f:"Heart weighs ~11kg to pump blood up that neck",s:"Wikipedia: ~800kg"},
+    {n:"Gorilla",i:"🦍",w:140,h:170,f:"Grip strength ~500kg. Shares 98% DNA with humans",s:"Wikipedia: 136-227kg, avg ~140kg"},
+    {n:"Polar Bear",i:"🐻‍❄️",w:450,h:150,f:"Up to 50% body fat. Largest bear species",s:"Wikipedia: male ~450kg"},
+    {n:"Brown Bear",i:"🐻",w:390,h:130,f:"Runs at 56 km/h — faster than Usain Bolt",s:"Wikipedia: male ~390kg"},
+    {n:"Lion",i:"🦁",w:160,h:120,f:"Sleeps up to 20 hours a day",s:"Wikipedia: 150-250kg, avg ~160kg"},
+    {n:"Tiger",i:"🐅",w:220,h:110,f:"Largest cat. Stripes are on the skin too",s:"Wikipedia: male ~220kg"},
+    {n:"Leopard",i:"🐆",w:60,h:70,f:"Carries prey 3× its weight up a tree",s:"Wikipedia: male ~60kg"},
+    {n:"Cheetah",i:"🐆",w:50,h:80,f:"0 to 100 km/h in 3 seconds. Top: 112 km/h",s:"Wikipedia: ~50kg"},
+    {n:"Spotted Hyena",i:"🦴",w:55,h:80,f:"Stronger bite than a lion. Crushes bones",s:"Wikipedia: ~50-60kg"},
+    {n:"Wolf",i:"🐺",w:40,h:80,f:"Howls carry up to 16 km",s:"Wikipedia: ~40kg"},
+    {n:"Kangaroo",i:"🦘",w:66,h:150,f:"Covers 9 meters in a single leap",s:"Wikipedia: male ~66kg"},
+    {n:"Giant Panda",i:"🐼",w:100,h:80,f:"Eats up to 38 kg of bamboo daily",s:"Wikipedia: ~100kg"},
+    {n:"Camel",i:"🐫",w:500,h:210,f:"Humps store fat, not water",s:"Wikipedia: ~500kg"},
+    {n:"Zebra",i:"🦓",w:350,h:130,f:"Each zebra's stripe pattern is unique",s:"Wikipedia: ~350kg"},
+    {n:"Tapir",i:"🐽",w:300,h:110,f:"Barely changed in 40 million years",s:"Wikipedia: ~300kg"},
+    {n:"Moose",i:"🦌",w:500,h:200,f:"Antler span up to 2m. Regrown yearly",s:"Wikipedia: male ~500kg"},
+    {n:"Walrus",i:"🦭",w:1000,h:120,f:"Tusks up to 1m — used to break ice",s:"Wikipedia: ~1,000kg"},
+    {n:"Jaguar",i:"🐆",w:90,h:70,f:"Strongest bite of any big cat",s:"Wikipedia: male ~90kg"},
+    {n:"Saltwater Croc",i:"🐊",w:450,h:45,f:"Bite force champion — about 2 tonnes",s:"Wikipedia: male ~450kg"},
+    {n:"Pygmy Hippo",i:"🦛",w:250,h:80,f:"1/6 the weight of a common hippo",s:"Wikipedia: ~250kg"},
+    {n:"Capybara",i:"🐹",w:55,h:55,f:"World's largest rodent. Loves hot springs",s:"Wikipedia: ~55kg"},
+    {n:"Ostrich",i:"🐦",w:110,h:270,f:"Can't fly but runs at 70 km/h",s:"Wikipedia: ~110kg"},
+    {n:"Komodo Dragon",i:"🦎",w:70,h:40,f:"Largest lizard. Venomous saliva",s:"Wikipedia: ~70kg"},
+    {n:"Orangutan",i:"🦧",w:75,h:140,f:"Arm span over 2m. Name means 'person of the forest'",s:"Wikipedia: male ~75kg"},
+    {n:"Wombat",i:"🐻",w:30,h:35,f:"Only animal with cube-shaped poop",s:"Wikipedia: ~30kg"},
+    {n:"Koala",i:"🐨",w:10,h:35,f:"Sleeps 22 hours a day",s:"Wikipedia: ~10kg"},
+    {n:"Emperor Penguin",i:"🐧",w:35,h:115,f:"Survives −60°C. Males incubate eggs for 2 months",s:"Wikipedia: ~35kg"},
+    {n:"Sloth",i:"🦥",w:5,h:60,f:"Digestion can take a whole month",s:"Wikipedia: ~5kg"},
+    {n:"Beaver",i:"🦫",w:25,h:30,f:"Teeth never stop growing. Master dam builders",s:"Wikipedia: ~25kg"},
+    {n:"Raccoon",i:"🦝",w:8,h:30,f:"Super dexterous paws — can open jars",s:"Wikipedia: ~8kg"},
+    {n:"Bison",i:"🦬",w:850,h:186,f:"Largest land animal in North America",s:"Wikipedia: male ~850kg"},
+    {n:"Water Buffalo",i:"🐃",w:725,h:170,f:"Massive wide-spreading horns",s:"Wikipedia: ~725kg"},
+    {n:"Sun Bear",i:"🐻",w:50,h:70,f:"Smallest bear. 25 cm tongue for honey",s:"Wikipedia: ~50kg"},
+    {n:"Alpaca",i:"🦙",w:65,h:90,f:"Spits when angry. Fleece warmer than sheep wool",s:"Wikipedia: ~65kg"},
+  ],
+};
+
+// Clone EN for languages without dedicated DB
+['es','zh','ko','fr','pt','de'].forEach(l => { if(!ANIMALS[l]) ANIMALS[l] = ANIMALS.en; });
+
+let lang = 'en', L, animals;
+let total=0, correct=0, streak=0, cur=null, answered=false, usedKeys=new Set();
+
+// Detect language
+const bLang = (navigator.language||'en').slice(0,2);
+if(LANGS[bLang]) lang = bLang;
+
+function t(){ return LANGS[lang]; }
+
+// Init lang buttons
+const grid = document.getElementById('lang-grid');
+Object.entries(LANGS).forEach(([code, data]) => {
+  const btn = document.createElement('button');
+  btn.className = 'lang-btn' + (code===lang?' active':'');
+  btn.textContent = data.flag + ' ' + data.label;
+  btn.onclick = () => { setLang(code); };
+  grid.appendChild(btn);
+});
+updateSplash();
+
+function setLang(code){
+  lang = code;
+  document.querySelectorAll('.lang-btn').forEach((b,i) => {
+    b.classList.toggle('active', Object.keys(LANGS)[i]===code);
+  });
+  updateSplash();
+}
+
+function updateSplash(){
+  L = t();
+  document.getElementById('title1').textContent = L.title1;
+  document.getElementById('splash-desc').textContent = L.desc;
+  document.getElementById('start-btn').textContent = L.start;
+}
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function startGame(){
+  L = t();
+  animals = ANIMALS[lang] || ANIMALS.en;
+  total=0; correct=0; streak=0; usedKeys.clear();
+  show('game');
+  nextQ();
+}
+
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function fmtKg(k){return k>=1000?(k/1000).toFixed(1)+"t":Math.round(k)+"kg"}
+
+function pickN(x,y){
+  const r=y.w/x.w;
+  if(r>10) return Math.floor(Math.random()*3)+6;
+  if(r>4) return Math.floor(Math.random()*3)+3;
+  if(r>2) return Math.floor(Math.random()*2)+2;
+  if(r>1.2) return Math.floor(Math.random()*2)+1;
+  return 1;
+}
+
+function genQ(){
+  for(let i=0;i<500;i++){
+    const a=pick(animals),b=pick(animals);
+    if(a.n===b.n)continue;
+    const cA=pickN(a,b),cB=pickN(b,a);
+    const tA=a.w*cA,tB=b.w*cB;
+    if(tA===tB)continue;
+    if(cA>8||cB>8)continue;
+    const absgap=Math.abs(tA-tB);
+    const diff=absgap/Math.max(tA,tB);
+    if(diff<0.02||diff>0.30)continue;
+    if(absgap>500)continue;
+    const key=[a.n,cA,b.n,cB].sort().join('|');
+    if(usedKeys.has(key))continue;
+    usedKeys.add(key);
+    const d=diff<0.10?"hard":diff<0.20?"med":"easy";
+    return {a,b,cA,cB,tA,tB,d,h:tA<tB?'a':'b',heavy:tA>tB?'a':'b'};
+  }
+  usedKeys.clear(); return genQ();
+}
+
+function countText(n){
+  if(lang==='ja') return n + L.unit;
+  if(lang==='zh') return n + L.unit;
+  if(lang==='ko') return n + L.unit;
+  return '×' + n;
+}
+
+function retryQ(){
+  answered=false;
+  const q=cur;
+
+  const dClass = q.d==='hard'?'diff-hard':q.d==='med'?'diff-med':'diff-easy';
+  const dText = q.d==='hard'?L.hard:q.d==='med'?L.med:L.easy;
+
+  document.getElementById('stat-score').innerHTML = '<strong>'+correct+'</strong> '+L.score;
+  document.getElementById('stat-round').innerHTML = '<strong>'+total+'</strong> '+L.round;
+  document.getElementById('streak-area').innerHTML = streak>=3
+    ? '<span class="streak-pill">🔥 '+streak+' '+L.streak+'</span>' : '';
+  document.getElementById('diff-area').innerHTML = '<span class="diff-pill '+dClass+'">'+dText+'</span>';
+  document.getElementById('q-title').textContent = L.question;
+
+  document.getElementById('battle-card').innerHTML = `
+    <div class="side side-a" onclick="answer('a')" id="sa">
+      <div class="emoji">${q.a.i}</div>
+      <div class="meta">
+        <div class="animal-name">${q.a.n}</div>
+      </div>
+      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+    </div>
+    <div class="vs-divider">${L.vs}</div>
+    <div class="side side-b" onclick="answer('b')" id="sb">
+      <div class="emoji">${q.b.i}</div>
+      <div class="meta">
+        <div class="animal-name">${q.b.n}</div>
+      </div>
+      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+    </div>`;
+
+  document.getElementById('result-area').innerHTML = '';
+}
+
+function nextQ(){
+  answered=false;
+  cur=genQ();
+  const q=cur;
+  total++;
+
+  const dClass = q.d==='hard'?'diff-hard':q.d==='med'?'diff-med':'diff-easy';
+  const dText = q.d==='hard'?L.hard:q.d==='med'?L.med:L.easy;
+
+  document.getElementById('stat-score').innerHTML = '<strong>'+correct+'</strong> '+L.score;
+  document.getElementById('stat-round').innerHTML = '<strong>'+total+'</strong> '+L.round;
+  document.getElementById('streak-area').innerHTML = streak>=3
+    ? '<span class="streak-pill">🔥 '+streak+' '+L.streak+'</span>' : '';
+  document.getElementById('diff-area').innerHTML = '<span class="diff-pill '+dClass+'">'+dText+'</span>';
+  document.getElementById('q-title').textContent = L.question;
+
+  document.getElementById('battle-card').innerHTML = `
+    <div class="side side-a" onclick="answer('a')" id="sa">
+      <div class="emoji">${q.a.i}</div>
+      <div class="meta">
+        <div class="animal-name">${q.a.n}</div>
+      </div>
+      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+    </div>
+    <div class="vs-divider">${L.vs}</div>
+    <div class="side side-b" onclick="answer('b')" id="sb">
+      <div class="emoji">${q.b.i}</div>
+      <div class="meta">
+        <div class="animal-name">${q.b.n}</div>
+      </div>
+      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+    </div>`;
+
+  document.getElementById('result-area').innerHTML = '';
+}
+
+function answer(ch){
+  if(answered)return;
+  answered=true;
+  const q=cur;
+  const ok=ch===q.h;
+  if(ok){correct++;streak++;}else{streak=0;}
+
+  document.getElementById('s'+ch).classList.add('chosen-'+ch);
+  document.getElementById('s'+q.h).classList.add('winner');
+
+  // Glass break effect on the HEAVY side (the dangerous one!)
+  const heavySide = document.getElementById('s'+q.heavy);
+  const rect = heavySide.getBoundingClientRect();
+  const heavyEmoji = q.heavy==='a'?q.a.i:q.b.i;
+  glassBreak(rect.left + rect.width/2, rect.top + rect.height/2, heavyEmoji);
+
+  document.getElementById('stat-score').innerHTML = '<strong>'+correct+'</strong> '+L.score;
+  document.getElementById('streak-area').innerHTML = streak>=3
+    ? '<span class="streak-pill">🔥 '+streak+' '+L.streak+'</span>' : '';
+
+  const mx=Math.max(q.tA,q.tB);
+  const pA=Math.round((q.tA/mx)*100);
+  const pB=Math.round((q.tB/mx)*100);
+  const heavyAnimal=q.heavy==='a'?q.a:q.b;
+  const safeAnimal=q.h==='a'?q.a:q.b;
+  const gap=Math.abs(q.tA-q.tB);
+
+  // Size trap detection: taller/bigger looking but lighter = trap!
+  const tallerAnimal = q.a.h >= q.b.h ? 'a' : 'b';
+  const isTrap = tallerAnimal !== q.heavy; // taller one is NOT the heavier side
+  const hA = q.a.h || 100, hB = q.b.h || 100;
+  const maxH = Math.max(hA, hB, 170); // 170cm = human reference
+  const szA = Math.max(20, Math.round((hA / maxH) * 64));
+  const szB = Math.max(20, Math.round((hB / maxH) * 64));
+  const szHuman = Math.max(20, Math.round((170 / maxH) * 64));
+
+  document.getElementById('result-area').innerHTML = `
+    <div class="result-verdict ${ok?'correct':'wrong'}">${ok?L.correct:L.wrong}</div>
+    <div class="bars">
+      <div class="bar-row">
+        <span class="bar-label">${q.a.i} ${q.a.n}${q.cA>1?' ×'+q.cA:''}</span>
+        <div class="bar-track"><div class="bar-fill ba" style="width:${pA}%">${fmtKg(q.tA)}</div></div>
+      </div>
+      ${q.cA>1?'<div style="text-align:right;font-size:11px;color:var(--tx3);margin:-4px 0 2px">(1頭 '+fmtKg(q.a.w)+')</div>':''}
+      <div class="bar-row">
+        <span class="bar-label">${q.b.i} ${q.b.n}${q.cB>1?' ×'+q.cB:''}</span>
+        <div class="bar-track"><div class="bar-fill bb" style="width:${pB}%">${fmtKg(q.tB)}</div></div>
+      </div>
+      ${q.cB>1?'<div style="text-align:right;font-size:11px;color:var(--tx3);margin:-4px 0 2px">(1頭 '+fmtKg(q.b.w)+')</div>':''}
+    </div>
+    <div class="winner-text">${heavyAnimal.i} ${heavyAnimal.n} ${L.win}</div>
+    <div class="gap-text">${L.gap} ${fmtKg(gap)}</div>
+    ${isTrap ? '<div style="text-align:center"><span class="trap-badge">📏 '+L.trapTrivia.replace('{name}',safeAnimal.n).replace('{h}',safeAnimal.h).replace('{w}',fmtKg(safeAnimal.w))+'</span></div>' : ''}
+    <div class="size-compare">
+      <div class="size-col">
+        <div class="size-emoji" style="font-size:${szA}px">${q.a.i}</div>
+        <div class="size-label"><strong>${hA}cm</strong><br>${q.a.n}</div>
+      </div>
+      <div class="human-ref">
+        <div style="font-size:${szHuman}px">🧍</div>
+        <div class="size-label">170cm</div>
+      </div>
+      <div class="size-col">
+        <div class="size-emoji" style="font-size:${szB}px">${q.b.i}</div>
+        <div class="size-label"><strong>${hB}cm</strong><br>${q.b.n}</div>
+      </div>
+    </div>
+    <div class="fact-card">
+      <p><span class="emoji-sm">💡</span>${heavyAnimal.n}：${heavyAnimal.f}</p>
+      <p><span class="emoji-sm">💡</span>${safeAnimal.n}：${safeAnimal.f}</p>
+    </div>
+    <div class="source-text">📖 ${L.src}: ${heavyAnimal.s} / ${safeAnimal.s}</div>
+    <button class="next-btn" onclick="${ok?'nextQ()':'startGame()'}" style="${ok?'':'background:#3d1a1a;color:#ff8a8a;'}">${ok?L.next:L.retry}</button>`;
+
+  document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function glassBreak(cx, cy, emoji) {
+  const app = document.getElementById('app');
+  app.classList.add('screen-shake');
+  setTimeout(() => app.classList.remove('screen-shake'), 400);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'glass-overlay';
+  document.body.appendChild(overlay);
+
+  // Falling emoji slam
+  const em = document.createElement('div');
+  em.className = 'heavy-emoji-fall';
+  em.style.cssText = `left:${cx-30}px;top:${cy-30}px;font-size:60px;`;
+  em.textContent = emoji;
+  overlay.appendChild(em);
+
+  // Impact ring
+  const ring = document.createElement('div');
+  ring.className = 'impact-ring';
+  ring.style.cssText = `left:${cx-40}px;top:${cy-40}px;width:80px;height:80px;`;
+  overlay.appendChild(ring);
+
+  // Crack lines radiating from center
+  for (let i = 0; i < 8; i++) {
+    const crack = document.createElement('div');
+    crack.className = 'crack-line';
+    const angle = (i / 8) * 360 + (Math.random() * 20 - 10);
+    const len = 40 + Math.random() * 80;
+    crack.style.cssText = `left:${cx}px;top:${cy}px;width:${len}px;height:1.5px;transform-origin:left center;transform:rotate(${angle}deg);animation-delay:${i*0.02}s;`;
+    overlay.appendChild(crack);
+  }
+
+  // Flying glass shards
+  for (let i = 0; i < 18; i++) {
+    const shard = document.createElement('div');
+    shard.className = 'glass-shard';
+    const w = 8 + Math.random() * 20;
+    const h = 6 + Math.random() * 16;
+    const angle = Math.random() * 360;
+    const dist = 60 + Math.random() * 160;
+    const dx = Math.cos(angle * Math.PI / 180) * dist;
+    const dy = Math.sin(angle * Math.PI / 180) * dist + 40;
+    const rot = (Math.random() - 0.5) * 720;
+    shard.style.cssText = `left:${cx - w/2 + (Math.random()-0.5)*30}px;top:${cy - h/2 + (Math.random()-0.5)*20}px;width:${w}px;height:${h}px;--dx:${dx}px;--dy:${dy}px;--rot:${rot}deg;animation-delay:${Math.random()*0.1}s;clip-path:polygon(${Math.random()*30}% 0%, 100% ${Math.random()*40}%, ${60+Math.random()*40}% 100%, 0% ${60+Math.random()*40}%);`;
+    overlay.appendChild(shard);
+  }
+
+  setTimeout(() => overlay.remove(), 1000);
+}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js');}
+</script>
+</body>
+</html>
