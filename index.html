@@ -101,9 +101,11 @@ body{display:flex;flex-direction:column}
 .side:active{transform:scale(0.98)}
 .side-a::before{background:linear-gradient(135deg,rgba(74,158,255,.12),transparent)}
 .side-b::before{background:linear-gradient(135deg,rgba(255,107,107,.12),transparent)}
+.side-c::before{background:linear-gradient(135deg,rgba(92,219,149,.12),transparent)}
 .side:hover::before{opacity:1}
 .side.chosen-a{border-color:var(--blue);background:rgba(74,158,255,.08)}
 .side.chosen-b{border-color:var(--red);background:rgba(255,107,107,.08)}
+.side.chosen-c{border-color:var(--green);background:rgba(92,219,149,.08)}
 .side.winner{border-color:var(--green);background:rgba(92,219,149,.08)}
 .side .emoji{font-size:42px;line-height:1;flex-shrink:0;z-index:1}
 .side .meta{flex:1;z-index:1}
@@ -114,7 +116,7 @@ body{display:flex;flex-direction:column}
   min-width:48px;height:48px;border-radius:var(--radius-sm);
   background:var(--bg3);z-index:1;
 }
-.num-badge .num{font-size:22px;font-weight:900;line-height:1}
+.num-badge .num{font-size:22px;font-weight:900;line-height:1;color:var(--acc)}
 .num-badge .unit{font-size:10px;color:var(--tx3);margin-top:1px}
 .vs-divider{
   text-align:center;font-size:14px;font-weight:800;
@@ -138,6 +140,7 @@ body{display:flex;flex-direction:column}
 }
 .bar-fill.ba{background:linear-gradient(90deg,#4a9eff,#6bb3ff)}
 .bar-fill.bb{background:linear-gradient(90deg,#ff6b6b,#ff9494)}
+.bar-fill.bc{background:linear-gradient(90deg,#5cdb95,#7de8ad)}
 .winner-text{text-align:center;font-size:15px;font-weight:700;margin-bottom:4px}
 .gap-text{text-align:center;font-size:13px;color:var(--tx2);margin-bottom:12px}
 .size-compare{
@@ -274,7 +277,7 @@ const LANGS = {
     flag:"🇯🇵", label:"日本語",
     title1:"CRACK!", title2:"",
     desc:"かるい方をえらべ！ まちがえたら…💥",
-    start:"スタート", question:"どっちが軽い？", vs:"VS",
+    start:"スタート", question:"どれがいちばん軽い？", vs:"VS",
     correct:"セーフ！ 🎉", wrong:"ドシャーン！💥",
     win:"が重くて崩壊！", gap:"差は", next:"つぎへ", retry:"リトライ",
     score:"正解", round:"問目", streak:"連続",
@@ -287,7 +290,7 @@ const LANGS = {
     flag:"🇬🇧", label:"English",
     title1:"CRACK!", title2:"",
     desc:"Pick the lighter side. Choose wrong and... 💥",
-    start:"START", question:"Which is lighter?", vs:"VS",
+    start:"START", question:"Which is the lightest?", vs:"VS",
     correct:"Safe! 🎉", wrong:"CRASH! 💥",
     win:"was heavier — CRASH!", gap:"Difference:", next:"Next", retry:"Retry",
     score:"correct", round:"round", streak:"streak",
@@ -300,7 +303,7 @@ const LANGS = {
     flag:"🇪🇸", label:"Español",
     title1:"CRACK!", title2:"",
     desc:"Elige el más ligero. Si no... 💥",
-    start:"EMPEZAR", question:"¿Cuál es más liviano?", vs:"VS",
+    start:"EMPEZAR", question:"¿Cuál es el más ligero?", vs:"VS",
     correct:"¡A salvo! 🎉", wrong:"¡CRASH! 💥",
     win:"¡gana!", gap:"Diferencia:", next:"Siguiente", retry:"Reintentar",
     score:"aciertos", round:"ronda", streak:"racha",
@@ -312,7 +315,7 @@ const LANGS = {
     flag:"🇨🇳", label:"中文",
     title1:"CRACK!", title2:"",
     desc:"选轻的一边，选错就…💥",
-    start:"开始", question:"哪边更轻？", vs:"VS",
+    start:"开始", question:"哪个最轻？", vs:"VS",
     correct:"安全！🎉", wrong:"碎了！💥",
     win:"赢了！", gap:"差距：", next:"下一题", retry:"再试一次",
     score:"正确", round:"题", streak:"连对",
@@ -324,7 +327,7 @@ const LANGS = {
     flag:"🇰🇷", label:"한국어",
     title1:"CRACK!", title2:"",
     desc:"가벼운 쪽을 골라! 틀리면… 💥",
-    start:"시작", question:"어느 쪽이 가벼울까?", vs:"VS",
+    start:"시작", question:"어느 쪽이 가장 가벼울까?", vs:"VS",
     correct:"세이프! 🎉", wrong:"와장창! 💥",
     win:"승리!", gap:"차이:", next:"다음", retry:"다시",
     score:"정답", round:"문제", streak:"연속",
@@ -336,7 +339,7 @@ const LANGS = {
     flag:"🇫🇷", label:"Français",
     title1:"CRACK!", title2:"",
     desc:"Choisis le plus léger. Sinon… 💥",
-    start:"JOUER", question:"Lequel est plus léger ?", vs:"VS",
+    start:"JOUER", question:"Lequel est le plus léger ?", vs:"VS",
     correct:"Sauvé ! 🎉", wrong:"CRASH ! 💥",
     win:"gagne !", gap:"Différence :", next:"Suivant", retry:"Réessayer",
     score:"bonnes", round:"question", streak:"série",
@@ -348,7 +351,7 @@ const LANGS = {
     flag:"🇧🇷", label:"Português",
     title1:"CRACK!", title2:"",
     desc:"Escolha o mais leve. Errou… 💥",
-    start:"JOGAR", question:"Qual é mais leve?", vs:"VS",
+    start:"JOGAR", question:"Qual é o mais leve?", vs:"VS",
     correct:"Salvo! 🎉", wrong:"CRASH! 💥",
     win:"vence!", gap:"Diferença:", next:"Próximo", retry:"Tentar de novo",
     score:"acertos", round:"rodada", streak:"sequência",
@@ -360,7 +363,7 @@ const LANGS = {
     flag:"🇩🇪", label:"Deutsch",
     title1:"CRACK!", title2:"",
     desc:"Wähl die leichtere Seite. Sonst… 💥",
-    start:"LOS", question:"Was ist leichter?", vs:"VS",
+    start:"LOS", question:"Was ist am leichtesten?", vs:"VS",
     correct:"Sicher! 🎉", wrong:"KRACH! 💥",
     win:"gewinnt!", gap:"Unterschied:", next:"Weiter", retry:"Nochmal",
     score:"richtig", round:"Frage", streak:"Serie",
@@ -461,7 +464,37 @@ const ANIMALS = {
 // Clone EN for languages without dedicated DB
 ['es','zh','ko','fr','pt','de'].forEach(l => { if(!ANIMALS[l]) ANIMALS[l] = ANIMALS.en; });
 
-let lang = 'en', L, animals;
+// ===== HUMAN DB =====
+const HUMANS = {
+  ja:[
+    {n:"赤ちゃん(0歳)",i:"👶",w:3.3,h:50,ff:["スマホ2台分の重さで爆誕。泣き声のパワーは大人並み","脳の重さは体重の10%。大人は2%。つまり赤ちゃんは頭でっかち","1日16時間寝る。でも親は2時間しか寝れない","おむつを1日10回替えると、1年で3,650回。親は修行僧","生まれた瞬間から泳げる反射がある。でも試さないで"],s:"WHO growth standards"},
+    {n:"1歳の子ども",i:"👶",w:10,h:75,ff:["まだ歩けるかあやしいのに、棚の上のものだけは確実に取る","お米1袋ぶんの重さ。でもお米より100倍動き回る","「ダメ！」と言われるとニヤッと笑ってもう一回やる天才","1日に400回くらい転ぶ。でも全然めげない。大人も見習いたい","ティッシュを箱から全部出す速度だけはオリンピック級"],s:"WHO growth standards"},
+    {n:"3歳の子ども",i:"🧒",w:14,h:95,ff:["「なんで？」を1日300回聞いてくる。ChatGPTより質問が多い","好き嫌いの基準は「色」。緑はだいたいアウト","靴の左右を間違える確率90%。でも本人は満足している","お気に入りの服しか着ない。毎日同じTシャツの謎","ポケットから石、どんぐり、ダンゴムシが出てくる年齢"],s:"WHO growth standards"},
+    {n:"5歳の子ども",i:"🧒",w:18,h:110,ff:["スイカ1個ぶんの重さ。でもスイカより100倍うるさい","将来の夢は「ケーキ屋さん」か「ヒーロー」が2大巨頭","歯が抜けると大イベント。枕の下に置いて妖精を待つ","鼻歌のレパートリーが無限。しかも全部オリジナル曲","お絵かきで家族を描くと、だいたい頭がデカすぎる"],s:"WHO/CDC growth charts"},
+    {n:"小学生(8歳)",i:"🧒",w:26,h:128,ff:["ランドセルの中身込みだとプラス5kg。毎日が筋トレ","消しゴムをちぎって遊ぶのが全世界共通の文化","給食のじゃんけん争奪戦が人生で最も真剣な勝負","友達のお母さんの料理をやたら褒める謎の社交性","うんち・おならネタで30分笑い続けられる圧倒的体力"],s:"CDC growth charts: ~26kg"},
+    {n:"小学生(10歳)",i:"🧑",w:32,h:138,ff:["お米10kgを3袋ぶん。給食おかわり争奪戦の年齢","「もう子供じゃない」が口癖だけど、まだサンタを半信半疑","友達との秘密基地づくりが建築学の原点","習い事のスケジュールが中小企業の社長並み","YouTuberが将来の夢ランキング上位な世代"],s:"CDC growth charts: ~32kg"},
+    {n:"中学生(13歳)",i:"🧑",w:45,h:158,ff:["1年で靴のサイズが2回変わる。親の財布が泣く","朝起きられない。でもゲームのためなら4時起きできる","声変わりの時期。電話に出ると「お母さんですか？」と聞かれる","自分の部屋のドアを閉める回数が急増する年齢","スマホのスクリーンタイムが大人を超え始める"],s:"CDC growth charts: ~45kg"},
+    {n:"高校生(16歳)",i:"🧑",w:58,h:168,ff:["食費が家計を圧迫し始める。冷蔵庫が空になる速度が異常","寝ても寝ても眠い。成長ホルモンが出まくっている証拠","友達と夜通し語り合う体力がある。なお授業では寝る","プリクラの盛り技術がPhotoshop超え","テスト前だけ急に部屋を片付け始める謎の習性"],s:"CDC growth charts: ~58kg"},
+    {n:"おとな",i:"🧑",w:62,h:170,ff:["体の60%は水。つまり37kgぶんはただの水","骨の数は206本。赤ちゃんの時は300本以上あった","一生で約35トンの食べ物を食べる。トラック1台ぶん","くしゃみの速度は時速160km。新幹線なみ","血管を全部つなげると地球2周半。約10万km"],s:"WHO: global adult avg ~62kg"},
+    {n:"おすもうさん",i:"🏋️",w:150,h:180,ff:["1日の食事は約8,000kcal。一般人の4日分を1日で","ちゃんこ鍋を1回で4〜5人前食べる。それを1日2回","握力は平均80kg。りんごを片手で潰せる","実は体脂肪率は意外と低い。筋肉の塊","100mを11秒台で走れる力士もいる。見た目に騙されるな"],s:"日本相撲協会データ"},
+  ],
+  en:[
+    {n:"Baby (newborn)",i:"👶",w:3.3,h:50,ff:["Weighs as much as two smartphones. Cries louder than both combined","Brain is 10% of body weight. For adults it's 2%. Babies are literally big-headed","Sleeps 16hrs a day. Parents sleep about 2hrs. Life is unfair","Goes through ~3,650 diapers in year one. Parenthood is an extreme sport","Born knowing how to hold their breath underwater. Don't test it though"],s:"WHO growth standards"},
+    {n:"1-year-old",i:"👶",w:10,h:75,ff:["Can barely walk but somehow always grabs the thing on the highest shelf","Weighs as much as a bag of rice. But rice doesn't run away from you","Hears 'no!' and smiles. Then does it again. Future CEO energy","Falls 400 times a day. Gets up every time. Adults could never","Can empty a tissue box in 3.2 seconds. Olympic-level speed"],s:"WHO growth standards"},
+    {n:"3-year-old",i:"🧒",w:14,h:95,ff:["Asks 'why?' 300 times a day. More questions than ChatGPT gets","Food preferences based entirely on color. Green = instant rejection","90% chance of shoes on wrong feet. 100% confidence they're right","Only wears the same favorite shirt. Every. Single. Day","Pockets contain: rocks, sticks, one acorn, and a mystery object"],s:"WHO growth standards"},
+    {n:"5-year-old",i:"🧒",w:18,h:110,ff:["Weighs about as much as a watermelon. 100x louder though","Career goals: cake shop owner or superhero. No in-between","Losing a tooth is a national holiday. Tooth fairy money is real income","Hums constantly. All songs are originals. Lyrics make no sense","Draws family portraits where everyone's head is 3x body size"],s:"WHO/CDC growth charts"},
+    {n:"8-year-old",i:"🧒",w:26,h:128,ff:["With a loaded backpack: +5kg. Basically daily strength training","Eraser destruction is a universal childhood culture worldwide","School lunch rock-paper-scissors is the most serious competition in life","Mysteriously compliments every friend's mom's cooking","Can laugh at poop jokes for 30 minutes straight. Unmatched stamina"],s:"CDC growth charts: ~26kg"},
+    {n:"10-year-old",i:"🧑",w:32,h:138,ff:["Three 10kg rice bags. Age of legendary cafeteria battles","Says 'I'm not a kid anymore' but still half-believes in Santa","Building secret forts with friends: the origin of architecture","After-school schedule busier than a startup CEO","Generation where 'YouTuber' is a top career aspiration"],s:"CDC growth charts: ~32kg"},
+    {n:"Teenager (13)",i:"🧑",w:45,h:158,ff:["Outgrows shoes twice a year. Parents' wallets weep openly","Can't wake up for school but sets a 4am alarm for gaming","Voice cracking phase. Phone callers ask 'is your mom home?'","Bedroom door closing frequency increases 400%","Screen time now exceeds most adults'. And they know it"],s:"CDC growth charts: ~45kg"},
+    {n:"Teenager (16)",i:"🧑",w:58,h:168,ff:["The fridge empties at an alarming rate. Food bills skyrocket","Sleeps 12hrs and still tired. Growth hormones working overtime","Can stay up all night talking to friends. Sleeps through class though","Photo editing skills surpass professional Photoshop users","Suddenly cleans room right before exams. Classic avoidance behavior"],s:"CDC growth charts: ~58kg"},
+    {n:"Adult",i:"🧑",w:62,h:170,ff:["60% water. So 37kg of you is literally just water","Has 206 bones. As a baby you had over 300. You lost bones growing up","Eats ~35 tonnes of food in a lifetime. That's a full truck","A sneeze travels at 160km/h. Faster than most highways allow","Blood vessels laid end to end: 100,000km. That's 2.5 trips around Earth"],s:"WHO: global adult avg ~62kg"},
+    {n:"Sumo wrestler",i:"🏋️",w:150,h:180,ff:["Eats ~8,000kcal/day. 4 days of normal food in one day","Eats 4-5 servings of chanko-nabe per meal. Twice a day","Average grip: 80kg. Can crush an apple one-handed","Surprisingly low body fat%. More muscle than you'd guess","Some run 100m in under 12 seconds. Don't be fooled by the size"],s:"Japan Sumo Association data"},
+  ],
+};
+['es','zh','ko','fr','pt','de'].forEach(l => { if(!HUMANS[l]) HUMANS[l] = HUMANS.en; });
+
+
+let lang = 'en', L, animals, humans;
 let total=0, correct=0, streak=0, cur=null, answered=false, usedKeys=new Set();
 
 // Detect language
@@ -504,13 +537,15 @@ function show(id){
 function startGame(){
   L = t();
   animals = ANIMALS[lang] || ANIMALS.en;
+  humans = HUMANS[lang] || HUMANS.en;
   total=0; correct=0; streak=0; usedKeys.clear();
   show('game');
   nextQ();
 }
 
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
-function fmtKg(k){return k>=1000?(k/1000).toFixed(1)+"t":Math.round(k)+"kg"}
+function fmtKg(k){return k>=1000?(k/1000).toFixed(1)+"t":k>=1?Math.round(k*10)/10+"kg":Math.round(k*1000)+"g"}
+function getFact(item){return item.ff?item.ff[Math.floor(Math.random()*item.ff.length)]:item.f||""}
 
 function pickN(x,y){
   const r=y.w/x.w;
@@ -522,22 +557,37 @@ function pickN(x,y){
 }
 
 function genQ(){
-  for(let i=0;i<500;i++){
-    const a=pick(animals),b=pick(animals);
+  for(let i=0;i<800;i++){
+    const a=pick(animals),b=pick(animals),h=pick(humans);
     if(a.n===b.n)continue;
     const cA=pickN(a,b),cB=pickN(b,a);
-    const tA=a.w*cA,tB=b.w*cB;
-    if(tA===tB)continue;
+    // Human count: scale to be competitive with animals
+    const avgAnimal=(a.w*cA+b.w*cB)/2;
+    let cH=Math.max(1,Math.round(avgAnimal/h.w));
+    cH=Math.max(1,cH+Math.floor(Math.random()*3)-1);
+    if(cH>20)continue;
+    const tA=a.w*cA,tB=b.w*cB,tH=h.w*cH;
     if(cA>8||cB>8)continue;
-    const absgap=Math.abs(tA-tB);
-    const diff=absgap/Math.max(tA,tB);
-    if(diff<0.02||diff>0.30)continue;
-    if(absgap>500)continue;
-    const key=[a.n,cA,b.n,cB].sort().join('|');
+    const totals=[{id:'a',t:tA},{id:'b',t:tB},{id:'c',t:tH}];
+    totals.sort((x,y)=>x.t-y.t);
+    const lightest=totals[0], heaviest=totals[2];
+    const absgap=heaviest.t-lightest.t;
+    const maxT=heaviest.t;
+    // All three should be somewhat close
+    const spread=(heaviest.t-lightest.t)/maxT;
+    if(spread>0.50)continue;
+    // Gap between lightest and middle should not be too big
+    const gap12=Math.abs(totals[1].t-totals[0].t)/maxT;
+    const gap23=Math.abs(totals[2].t-totals[1].t)/maxT;
+    if(gap12>0.35||gap23>0.35)continue;
+    if(absgap>800)continue;
+    const key=[a.n,cA,b.n,cB,h.n,cH].sort().join('|');
     if(usedKeys.has(key))continue;
     usedKeys.add(key);
-    const d=diff<0.10?"hard":diff<0.20?"med":"easy";
-    return {a,b,cA,cB,tA,tB,d,h:tA<tB?'a':'b',heavy:tA>tB?'a':'b'};
+    const minDiff=Math.min(gap12,gap23);
+    const d=minDiff<0.06?"hard":minDiff<0.15?"med":"easy";
+    return {a,b,c:h,cA,cB,cC:cH,tA,tB,tC:tH,d,
+      light:lightest.id,heavy:heaviest.id};
   }
   usedKeys.clear(); return genQ();
 }
@@ -551,35 +601,36 @@ function countText(n){
 
 function retryQ(){
   answered=false;
-  const q=cur;
-
-  const dClass = q.d==='hard'?'diff-hard':q.d==='med'?'diff-med':'diff-easy';
-  const dText = q.d==='hard'?L.hard:q.d==='med'?L.med:L.easy;
-
+  const dClass = cur.d==='hard'?'diff-hard':cur.d==='med'?'diff-med':'diff-easy';
+  const dText = cur.d==='hard'?L.hard:cur.d==='med'?L.med:L.easy;
   document.getElementById('stat-score').innerHTML = '<strong>'+correct+'</strong> '+L.score;
   document.getElementById('stat-round').innerHTML = '<strong>'+total+'</strong> '+L.round;
   document.getElementById('streak-area').innerHTML = streak>=3
     ? '<span class="streak-pill">🔥 '+streak+' '+L.streak+'</span>' : '';
   document.getElementById('diff-area').innerHTML = '<span class="diff-pill '+dClass+'">'+dText+'</span>';
   document.getElementById('q-title').textContent = L.question;
+  const q=cur;
+  const unitText=lang==='ja'||lang==='zh'||lang==='ko'?L.unit:'';
+  const cLabel=(item,cnt)=>cnt>1?cnt+(unitText||'x'):'1'+(unitText||'');
 
   document.getElementById('battle-card').innerHTML = `
     <div class="side side-a" onclick="answer('a')" id="sa">
       <div class="emoji">${q.a.i}</div>
-      <div class="meta">
-        <div class="animal-name">${q.a.n}</div>
-      </div>
-      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+      <div class="meta"><div class="animal-name">${q.a.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${unitText}</div></div>
     </div>
     <div class="vs-divider">${L.vs}</div>
     <div class="side side-b" onclick="answer('b')" id="sb">
       <div class="emoji">${q.b.i}</div>
-      <div class="meta">
-        <div class="animal-name">${q.b.n}</div>
-      </div>
-      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+      <div class="meta"><div class="animal-name">${q.b.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${unitText}</div></div>
+    </div>
+    <div class="vs-divider">${L.vs}</div>
+    <div class="side side-c" onclick="answer('c')" id="sc">
+      <div class="emoji">${q.c.i}</div>
+      <div class="meta"><div class="animal-name">${q.c.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cC}</div><div class="unit">${lang==='ja'?'人':unitText}</div></div>
     </div>`;
-
   document.getElementById('result-area').innerHTML = '';
 }
 
@@ -599,23 +650,27 @@ function nextQ(){
   document.getElementById('diff-area').innerHTML = '<span class="diff-pill '+dClass+'">'+dText+'</span>';
   document.getElementById('q-title').textContent = L.question;
 
+  const unitText=lang==='ja'||lang==='zh'||lang==='ko'?L.unit:'';
+  const cLabel=(item,cnt)=>cnt>1?cnt+(unitText||'x'):'1'+(unitText||'');
+
   document.getElementById('battle-card').innerHTML = `
     <div class="side side-a" onclick="answer('a')" id="sa">
       <div class="emoji">${q.a.i}</div>
-      <div class="meta">
-        <div class="animal-name">${q.a.n}</div>
-      </div>
-      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+      <div class="meta"><div class="animal-name">${q.a.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cA}</div><div class="unit">${unitText}</div></div>
     </div>
     <div class="vs-divider">${L.vs}</div>
     <div class="side side-b" onclick="answer('b')" id="sb">
       <div class="emoji">${q.b.i}</div>
-      <div class="meta">
-        <div class="animal-name">${q.b.n}</div>
-      </div>
-      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${lang==='ja'||lang==='zh'||lang==='ko'?L.unit:''}</div></div>
+      <div class="meta"><div class="animal-name">${q.b.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cB}</div><div class="unit">${unitText}</div></div>
+    </div>
+    <div class="vs-divider">${L.vs}</div>
+    <div class="side side-c" onclick="answer('c')" id="sc">
+      <div class="emoji">${q.c.i}</div>
+      <div class="meta"><div class="animal-name">${q.c.n}</div></div>
+      <div class="num-badge"><div class="num">${q.cC}</div><div class="unit">${lang==='ja'?'人':unitText}</div></div>
     </div>`;
-
   document.getElementById('result-area').innerHTML = '';
 }
 
@@ -623,74 +678,71 @@ function answer(ch){
   if(answered)return;
   answered=true;
   const q=cur;
-  const ok=ch===q.h;
+  const ok=ch===q.light;
   if(ok){correct++;streak++;}else{streak=0;}
 
   document.getElementById('s'+ch).classList.add('chosen-'+ch);
-  document.getElementById('s'+q.h).classList.add('winner');
+  document.getElementById('s'+q.light).classList.add('winner');
 
-  // Glass break effect on the HEAVY side (the dangerous one!)
+  // Glass break on heavy side
   const heavySide = document.getElementById('s'+q.heavy);
   const rect = heavySide.getBoundingClientRect();
-  const heavyEmoji = q.heavy==='a'?q.a.i:q.b.i;
-  glassBreak(rect.left + rect.width/2, rect.top + rect.height/2, heavyEmoji);
+  const items={a:q.a,b:q.b,c:q.c};
+  const counts={a:q.cA,b:q.cB,c:q.cC};
+  const totals={a:q.tA,b:q.tB,c:q.tC};
+  glassBreak(rect.left+rect.width/2, rect.top+rect.height/2, items[q.heavy].i);
 
   document.getElementById('stat-score').innerHTML = '<strong>'+correct+'</strong> '+L.score;
   document.getElementById('streak-area').innerHTML = streak>=3
     ? '<span class="streak-pill">🔥 '+streak+' '+L.streak+'</span>' : '';
 
-  const mx=Math.max(q.tA,q.tB);
+  const mx=Math.max(q.tA,q.tB,q.tC);
   const pA=Math.round((q.tA/mx)*100);
   const pB=Math.round((q.tB/mx)*100);
-  const heavyAnimal=q.heavy==='a'?q.a:q.b;
-  const safeAnimal=q.h==='a'?q.a:q.b;
-  const gap=Math.abs(q.tA-q.tB);
+  const pC=Math.round((q.tC/mx)*100);
+  const heavyItem=items[q.heavy];
+  const lightItem=items[q.light];
 
-  // Size trap detection: taller/bigger looking but lighter = trap!
-  const tallerAnimal = q.a.h >= q.b.h ? 'a' : 'b';
-  const isTrap = tallerAnimal !== q.heavy; // taller one is NOT the heavier side
-  const hA = q.a.h || 100, hB = q.b.h || 100;
-  const maxH = Math.max(hA, hB, 170); // 170cm = human reference
-  const szA = Math.max(20, Math.round((hA / maxH) * 64));
-  const szB = Math.max(20, Math.round((hB / maxH) * 64));
-  const szHuman = Math.max(20, Math.round((170 / maxH) * 64));
+  // Sort all three for display
+  const sorted=[{id:'a',item:q.a,cnt:q.cA,t:q.tA,cls:'ba'},{id:'b',item:q.b,cnt:q.cB,t:q.tB,cls:'bb'},{id:'c',item:q.c,cnt:q.cC,t:q.tC,cls:'bc'}];
+  sorted.sort((x,y)=>y.t-x.t);
+
+  // Size comparison
+  const allH=[q.a.h||100,q.b.h||100,q.c.h||100];
+  const maxH=Math.max(...allH);
+  const szs=allH.map(h=>Math.max(18,Math.round((h/maxH)*56)));
+
+  const barsHtml = sorted.map(s=>{
+    const pct=Math.round((s.t/mx)*100);
+    const perUnit=s.cnt>1?'<div style="text-align:right;font-size:11px;color:var(--tx3);margin:-4px 0 2px">(1'+(lang==='ja'?(s.id==='c'?'人あたり':'頭あたり'):' each')+' '+fmtKg(s.item.w)+')</div>':'';
+    return '<div class="bar-row"><span class="bar-label">'+s.item.i+' '+s.item.n+(s.cnt>1?' ×'+s.cnt:'')+'</span><div class="bar-track"><div class="bar-fill '+s.cls+'" style="width:'+pct+'%">'+fmtKg(s.t)+'</div></div></div>'+perUnit;
+  }).join('');
 
   document.getElementById('result-area').innerHTML = `
     <div class="result-verdict ${ok?'correct':'wrong'}">${ok?L.correct:L.wrong}</div>
-    <div class="bars">
-      <div class="bar-row">
-        <span class="bar-label">${q.a.i} ${q.a.n}${q.cA>1?' ×'+q.cA:''}</span>
-        <div class="bar-track"><div class="bar-fill ba" style="width:${pA}%">${fmtKg(q.tA)}</div></div>
-      </div>
-      ${q.cA>1?'<div style="text-align:right;font-size:11px;color:var(--tx3);margin:-4px 0 2px">(1頭 '+fmtKg(q.a.w)+')</div>':''}
-      <div class="bar-row">
-        <span class="bar-label">${q.b.i} ${q.b.n}${q.cB>1?' ×'+q.cB:''}</span>
-        <div class="bar-track"><div class="bar-fill bb" style="width:${pB}%">${fmtKg(q.tB)}</div></div>
-      </div>
-      ${q.cB>1?'<div style="text-align:right;font-size:11px;color:var(--tx3);margin:-4px 0 2px">(1頭 '+fmtKg(q.b.w)+')</div>':''}
-    </div>
-    <div class="winner-text">${heavyAnimal.i} ${heavyAnimal.n} ${L.win}</div>
-    <div class="gap-text">${L.gap} ${fmtKg(gap)}</div>
-    ${isTrap ? '<div style="text-align:center"><span class="trap-badge">📏 '+L.trapTrivia.replace('{name}',safeAnimal.n).replace('{h}',safeAnimal.h).replace('{w}',fmtKg(safeAnimal.w))+'</span></div>' : ''}
+    <div class="bars">${barsHtml}</div>
+    <div class="winner-text">${heavyItem.i} ${heavyItem.n} ${L.win}</div>
+    <div class="gap-text">${L.gap} ${fmtKg(Math.abs(totals[q.heavy]-totals[q.light]))}</div>
     <div class="size-compare">
       <div class="size-col">
-        <div class="size-emoji" style="font-size:${szA}px">${q.a.i}</div>
-        <div class="size-label"><strong>${hA}cm</strong><br>${q.a.n}</div>
-      </div>
-      <div class="human-ref">
-        <div style="font-size:${szHuman}px">🧍</div>
-        <div class="size-label">170cm</div>
+        <div class="size-emoji" style="font-size:${szs[0]}px">${q.a.i}</div>
+        <div class="size-label"><strong>${q.a.h}cm</strong><br>${q.a.n}</div>
       </div>
       <div class="size-col">
-        <div class="size-emoji" style="font-size:${szB}px">${q.b.i}</div>
-        <div class="size-label"><strong>${hB}cm</strong><br>${q.b.n}</div>
+        <div class="size-emoji" style="font-size:${szs[1]}px">${q.b.i}</div>
+        <div class="size-label"><strong>${q.b.h}cm</strong><br>${q.b.n}</div>
+      </div>
+      <div class="size-col">
+        <div class="size-emoji" style="font-size:${szs[2]}px">${q.c.i}</div>
+        <div class="size-label"><strong>${q.c.h}cm</strong><br>${q.c.n}</div>
       </div>
     </div>
     <div class="fact-card">
-      <p><span class="emoji-sm">💡</span>${heavyAnimal.n}：${heavyAnimal.f}</p>
-      <p><span class="emoji-sm">💡</span>${safeAnimal.n}：${safeAnimal.f}</p>
+      <p><span class="emoji-sm">💡</span>${sorted[0].item.n}：${getFact(sorted[0].item)}</p>
+      <p><span class="emoji-sm">💡</span>${sorted[1].item.n}：${getFact(sorted[1].item)}</p>
+      <p><span class="emoji-sm">💡</span>${sorted[2].item.n}：${getFact(sorted[2].item)}</p>
     </div>
-    <div class="source-text">📖 ${L.src}: ${heavyAnimal.s} / ${safeAnimal.s}</div>
+    <div class="source-text">📖 ${L.src}: ${sorted.map(s=>s.item.s).join(' / ')}</div>
     <button class="next-btn" onclick="${ok?'nextQ()':'startGame()'}" style="${ok?'':'background:#3d1a1a;color:#ff8a8a;'}">${ok?L.next:L.retry}</button>`;
 
   document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'end'});
